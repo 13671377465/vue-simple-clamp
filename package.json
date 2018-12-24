@@ -1,0 +1,19 @@
+{
+  "name": "vue-simple-clamp",
+  "version": "1.0.0",
+  "description": "clamping multiline text plugin for Vue.js",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/13671377465/vue-simple-clamp.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/13671377465/vue-simple-clamp/issues"
+  },
+  "homepage": "https://github.com/13671377465/vue-simple-clamp"
+}
