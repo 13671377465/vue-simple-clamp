@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>vue-simple-clamp demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      p {
+        width: 200px;
+        margin-bottom: 20px;
+        line-height: 1.3;
+      }
+    </style>
+  </head>
+  <body>
+
+    <div id="app">
+      <p v-clamp="{ clamp: 2 }">{{text}}</p>
+      <p v-clamp="{ clamp: 2, useNativeClamp: false }">{{text}}</p>
+      <p v-clamp="{ clamp: 3, useNativeClamp: false, truncationChar: '***' }">{{text}}</p>
+      <p v-clamp="{ clamp: 2, useNativeClamp: false, truncationHTML: 'Read More' }">{{text}}</p>
+      <p v-clamp="{ clamp: 2, useNativeClamp: false, splitOnChars: ['((('] }">{{text}}</p>
+      <p v-clamp="{ clamp: 2, useNativeClamp: false, animate: true }">{{text}}</p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="./vue-simple-clamp.js"></script>
+    <script>
+      Vue.use(clamp)
+      new Vue({
+        el: '#app',
+        data: {
+          text: '这一段测试用到长文tetxt(((tt段测试用到长文本这一段测试用到长文本这一段测试用到长文本这一段测试用到长文本这一段测试用到长文本到长文本这一段测试用到长文本这一段测试用到长文本这一段测试用到长文本这一段测试用到长文本到长文本这一段测试用到长文本这一段测试用到长文本这一段测试用到长文本这一段测试用到长文本到长文本这一段测试用到长文本这一段测试.用到长文本这一段测试用到长文本这一段测试用到长文本'
+        }
+      })
+    </script>
+  </body>
+</html>

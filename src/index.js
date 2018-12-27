@@ -1,5 +1,3 @@
-'use strict'
-
 function clamp(element, options) {
   options = options || {}
 
@@ -248,11 +246,13 @@ const hookClamp = (el, binding) => {
   clamp(el, binding.value)
 }
 
-exports.install = function(Vue) {
-
+var vueSimpleClamp = {}
+console.log('真的好用！！！')
+vueSimpleClamp.install = function (Vue) {
   Vue.directive('clamp', {
     inserted: hookClamp,
     componentUpdated: hookClamp
   })
-
 }
+
+export default vueSimpleClamp
