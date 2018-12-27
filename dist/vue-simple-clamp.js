@@ -250,7 +250,6 @@
   };
 
   var vueSimpleClamp = {};
-  console.log('真的好用！！！');
 
   vueSimpleClamp.install = function (Vue) {
     Vue.directive('clamp', {
