@@ -2,6 +2,7 @@ import {
   getMaxHeight,
   getMaxLines
 } from './lib/util'
+import * as R from 'ramda'
 
 function clamp(element, options) {
   options = options || {}

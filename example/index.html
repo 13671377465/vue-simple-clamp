@@ -15,10 +15,10 @@
   <body>
 
     <div id="app">
-      <p v-clamp="{ clamp: 2 }">{{text}}</p>
+      <p id="demo" v-clamp="{ clamp: 2 }">{{text}}</p>
       <p v-clamp="{ clamp: 2, useNativeClamp: false }">{{text}}</p>
       <p v-clamp="{ clamp: 3, useNativeClamp: false, truncationChar: '***' }">{{text}}</p>
-      <p v-clamp="{ clamp: 2, useNativeClamp: false, truncationHTML: 'Read More' }">{{text}}</p>
+      <p v-clamp="{ clamp: 4, useNativeClamp: false, truncationHTML: 'Read More' }">{{text}}</p>
       <p v-clamp="{ clamp: 2, useNativeClamp: false, splitOnChars: ['((('] }">{{text}}</p>
       <p v-clamp="{ clamp: 2, useNativeClamp: false, animate: true }">{{text}}</p>
     </div>
