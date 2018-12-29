@@ -2,7 +2,7 @@ import * as R from 'ramda'
 
 const setFloatProperty = R.ifElse(
   R.equals('float'),
-  () => 'styleFloat',
+  R.always('styleFloat'),
   R.identity
 )
 const reg = /(\-([a-z]){1})/g

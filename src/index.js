@@ -4,27 +4,26 @@ import {
 } from './lib/util'
 import * as R from 'ramda'
 
-function clamp(element, options) {
-  options = options || {}
+function clamp(element, options = {}) {
 
-  var opt = {
+  const opt = {
     clamp:              options.clamp || 2,
     useNativeClamp:     typeof(options.useNativeClamp) != 'undefined' ? options.useNativeClamp : true,
-    splitOnChars:       options.splitOnChars || ['.', '-', '–', '—', ' '], //Split on sentences (periods), hypens, en-dashes, em-dashes, and words (spaces).
+    splitOnChars:       options.splitOnChars || ['.', '。', '，', ',', ' '],
     animate:            options.animate || false,
     truncationChar:     options.truncationChar || '…',
     truncationHTML:     options.truncationHTML
-  },
+  }
   
-  sty = element.style,
-  originalText = element.innerHTML,
+  const sty = element.style
+  const originalText = element.innerHTML
   
-  supportsNativeClamp = typeof(element.style.webkitLineClamp) != 'undefined',
-  clampValue = opt.clamp,
-  isCSSValue = clampValue.indexOf && (clampValue.indexOf('px') > -1 || clampValue.indexOf('em') > -1),
-  truncationHTMLContainer
+  const supportsNativeClamp = typeof(element.style.webkitLineClamp) != 'undefined'
+  const clampValue = opt.clamp
+  const isCSSValue = clampValue.indexOf && (clampValue.indexOf('px') > -1 || clampValue.indexOf('em') > -1)
+  let truncationHTMLContainer
 
-  if (opt.truncationHTML) {
+  if(opt.truncationHTML) {
     truncationHTMLContainer = document.createElement('span')
     truncationHTMLContainer.innerHTML = opt.truncationHTML
   }
@@ -34,27 +33,20 @@ function clamp(element, options) {
     chunks,
     lastChunk
 
-  function applyEllipsis(el, str, opt) {
-    el.nodeValue = str + opt.truncationChar
-  }
-    
+  const concatEllipsis = R.curry(R.flip((text, opt) => R.concat(text, opt.truncationChar)))
+
   /**
    * @param {HTMLElement} el
    * @return {HTMLElement|string}
    * 获得元素的最后一个子元素
    */
   function getLastChild(el) {
-    //Current element has children, need to go deeper and get last child as a text node
     if (el.lastChild.children && el.lastChild.children.length > 0) {
       return getLastChild(Array.prototype.slice.call(el.children).pop())
-    }
-    //This is the absolute last child, a text node, but something's wrong with it. Remove it and keep trying
-    else if (!el.lastChild || !el.lastChild.nodeValue || el.lastChild.nodeValue == '' || el.lastChild.nodeValue == opt.truncationChar) {
+    } else if (!el.lastChild || !el.lastChild.nodeValue || el.lastChild.nodeValue === '' || el.lastChild.nodeValue === opt.truncationChar) {
       el.lastChild.parentNode.removeChild(el.lastChild)
-      return getLastChild(element)
-    }
-    //This is the last child we want, return it
-    else {
+      return getLastChild(el)
+    } else {
       return el.lastChild
     }
   }
@@ -66,7 +58,10 @@ function clamp(element, options) {
    * 从文本重一次删除一个字符，直到宽度与高度的积低于传入的最大高度
    */
   function truncate(target, maxHeight) {
-    if (!maxHeight) {return}
+
+    const applyEllipsis = concatEllipsis(opt)
+
+    if (!maxHeight) { return }
       
       /**
        * Resets global variables.
@@ -97,10 +92,10 @@ function clamp(element, options) {
       //If there are chunks left to remove, remove the last one and see if
       // the nodeValue fits.
     if (chunks.length > 1) {
-      // console.log('chunks', chunks)
+
       lastChunk = chunks.pop()
-      // console.log('lastChunk', lastChunk)
-      applyEllipsis(target, chunks.join(splitChar), opt)
+
+      target.nodeValue = applyEllipsis(chunks.join(splitChar))
     }
     //No more chunks can be removed using this character
     else {
@@ -119,7 +114,7 @@ function clamp(element, options) {
       if (element.clientHeight <= maxHeight) {
         //There's still more characters to try splitting on, not quite done yet
         if (splitOnChars.length >= 0 && splitChar != '') {
-          applyEllipsis(target, chunks.join(splitChar) + splitChar + lastChunk, opt)
+          target.nodeValue = applyEllipsis(chunks.join(splitChar) + splitChar + lastChunk)
           chunks = null
         }
         //Finished!
@@ -133,20 +128,19 @@ function clamp(element, options) {
       //No valid chunks even when splitting by letter, time to move
       //on to the next node
       if (splitChar == '') {
-        applyEllipsis(target, '', opt)
+        target.nodeValue = applyEllipsis('')
         target = getLastChild(element)
         
         reset()
       }
     }
       
-      //If you get here it means still too big, let's keep truncating
-    if (opt.animate) {
+    //If you get here it means still too big, let's keep truncating
+    if(opt.animate) {
       setTimeout(function() {
         truncate(target, maxHeight)
       }, opt.animate === true ? 10 : opt.animate)
-    }
-    else {
+    } else {
       return truncate(target, maxHeight)
     }
   }
@@ -176,7 +170,7 @@ function clamp(element, options) {
     var height = getMaxHeight(element, clampValue)
 
     if (height <= element.clientHeight) {
-      clampedText = truncate(getLastChild(element, opt), height)
+      clampedText = truncate(getLastChild(element), height)
     }
   }
   

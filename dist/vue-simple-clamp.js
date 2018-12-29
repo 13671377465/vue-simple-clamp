@@ -4,6 +4,24 @@
   (global = global || self, global.clamp = factory());
 }(this, function () { 'use strict';
 
+  function _typeof(obj) {
+    if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
+      _typeof = function (obj) {
+        return typeof obj;
+      };
+    } else {
+      _typeof = function (obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+      };
+    }
+
+    return _typeof(obj);
+  }
+
+  function _readOnlyError(name) {
+    throw new Error("\"" + name + "\" is read-only");
+  }
+
   /**
    * A function that always returns `false`. Any passed in parameters are ignored.
    *
@@ -63,20 +81,6 @@
    *      const greet = R.replace('{name}', R.__, 'Hello, {name}!');
    *      greet('Alice'); //=> 'Hello, Alice!'
    */
-
-  function _typeof(obj) {
-    if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof = function (obj) {
-        return typeof obj;
-      };
-    } else {
-      _typeof = function (obj) {
-        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-      };
-    }
-
-    return _typeof(obj);
-  }
 
   function _isPlaceholder(a) {
     return a != null && _typeof(a) === 'object' && a['@@functional/placeholder'] === true;
@@ -1017,6 +1021,34 @@
   var reduce =
   /*#__PURE__*/
   _curry3(_reduce);
+
+  /**
+   * Returns a function that always returns the given value. Note that for
+   * non-primitives the value returned is a reference to the original value.
+   *
+   * This function is known as `const`, `constant`, or `K` (for K combinator) in
+   * other languages and libraries.
+   *
+   * @func
+   * @memberOf R
+   * @since v0.1.0
+   * @category Function
+   * @sig a -> (* -> a)
+   * @param {*} val The value to wrap in a function
+   * @return {Function} A Function :: * -> val.
+   * @example
+   *
+   *      const t = R.always('Tee');
+   *      t(); //=> 'Tee'
+   */
+
+  var always =
+  /*#__PURE__*/
+  _curry1(function always(val) {
+    return function () {
+      return val;
+    };
+  });
 
   /**
    * ap applies a list of functions to a list of values.
@@ -2245,6 +2277,65 @@
   /*#__PURE__*/
   _curry1(function toString(val) {
     return _toString(val, []);
+  });
+
+  /**
+   * Returns the result of concatenating the given lists or strings.
+   *
+   * Note: `R.concat` expects both arguments to be of the same type,
+   * unlike the native `Array.prototype.concat` method. It will throw
+   * an error if you `concat` an Array with a non-Array value.
+   *
+   * Dispatches to the `concat` method of the first argument, if present.
+   * Can also concatenate two members of a [fantasy-land
+   * compatible semigroup](https://github.com/fantasyland/fantasy-land#semigroup).
+   *
+   * @func
+   * @memberOf R
+   * @since v0.1.0
+   * @category List
+   * @sig [a] -> [a] -> [a]
+   * @sig String -> String -> String
+   * @param {Array|String} firstList The first list
+   * @param {Array|String} secondList The second list
+   * @return {Array|String} A list consisting of the elements of `firstList` followed by the elements of
+   * `secondList`.
+   *
+   * @example
+   *
+   *      R.concat('ABC', 'DEF'); // 'ABCDEF'
+   *      R.concat([4, 5, 6], [1, 2, 3]); //=> [4, 5, 6, 1, 2, 3]
+   *      R.concat([], []); //=> []
+   */
+
+  var concat =
+  /*#__PURE__*/
+  _curry2(function concat(a, b) {
+    if (_isArray(a)) {
+      if (_isArray(b)) {
+        return a.concat(b);
+      }
+
+      throw new TypeError(toString$1(b) + ' is not an array');
+    }
+
+    if (_isString(a)) {
+      if (_isString(b)) {
+        return a + b;
+      }
+
+      throw new TypeError(toString$1(b) + ' is not a string');
+    }
+
+    if (a != null && _isFunction(a['fantasy-land/concat'])) {
+      return a['fantasy-land/concat'](b);
+    }
+
+    if (a != null && _isFunction(a.concat)) {
+      return a.concat(b);
+    }
+
+    throw new TypeError(toString$1(a) + ' does not have a method named "concat" or "fantasy-land/concat"');
   });
 
   /**
@@ -3765,9 +3856,7 @@
   /*#__PURE__*/
   chain(_identity);
 
-  var setFloatProperty = ifElse(equals('float'), function () {
-    return 'styleFloat';
-  }, identity);
+  var setFloatProperty = ifElse(equals('float'), always('styleFloat'), identity);
   var reg = /(\-([a-z]){1})/g;
 
   var upperTwo = function upperTwo() {
@@ -3847,23 +3936,22 @@
     return max(0, getLines(availHeight, lineHeight));
   }
 
-  function clamp$1(element, options) {
-    options = options || {};
+  function clamp$1(element) {
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
     var opt = {
       clamp: options.clamp || 2,
       useNativeClamp: typeof options.useNativeClamp != 'undefined' ? options.useNativeClamp : true,
-      splitOnChars: options.splitOnChars || ['.', '-', '–', '—', ' '],
-      //Split on sentences (periods), hypens, en-dashes, em-dashes, and words (spaces).
+      splitOnChars: options.splitOnChars || ['.', '。', '，', ',', ' '],
       animate: options.animate || false,
       truncationChar: options.truncationChar || '…',
       truncationHTML: options.truncationHTML
-    },
-        sty = element.style,
-        originalText = element.innerHTML,
-        supportsNativeClamp = typeof element.style.webkitLineClamp != 'undefined',
-        clampValue = opt.clamp,
-        isCSSValue = clampValue.indexOf && (clampValue.indexOf('px') > -1 || clampValue.indexOf('em') > -1),
-        truncationHTMLContainer;
+    };
+    var sty = element.style;
+    var originalText = element.innerHTML;
+    var supportsNativeClamp = typeof element.style.webkitLineClamp != 'undefined';
+    var clampValue = opt.clamp;
+    var isCSSValue = clampValue.indexOf && (clampValue.indexOf('px') > -1 || clampValue.indexOf('em') > -1);
+    var truncationHTMLContainer;
 
     if (opt.truncationHTML) {
       truncationHTMLContainer = document.createElement('span');
@@ -3874,29 +3962,24 @@
         splitChar = splitOnChars[0],
         chunks,
         lastChunk;
-
-    function applyEllipsis(el, str, opt) {
-      el.nodeValue = str + opt.truncationChar;
-    }
+    var concatEllipsis = curry(flip(function (text, opt) {
+      return concat(text, opt.truncationChar);
+    }));
     /**
      * @param {HTMLElement} el
      * @return {HTMLElement|string}
      * 获得元素的最后一个子元素
      */
 
-
     function getLastChild(el) {
-      //Current element has children, need to go deeper and get last child as a text node
       if (el.lastChild.children && el.lastChild.children.length > 0) {
         return getLastChild(Array.prototype.slice.call(el.children).pop());
-      } //This is the absolute last child, a text node, but something's wrong with it. Remove it and keep trying
-      else if (!el.lastChild || !el.lastChild.nodeValue || el.lastChild.nodeValue == '' || el.lastChild.nodeValue == opt.truncationChar) {
-          el.lastChild.parentNode.removeChild(el.lastChild);
-          return getLastChild(element);
-        } //This is the last child we want, return it
-        else {
-            return el.lastChild;
-          }
+      } else if (!el.lastChild || !el.lastChild.nodeValue || el.lastChild.nodeValue === '' || el.lastChild.nodeValue === opt.truncationChar) {
+        el.lastChild.parentNode.removeChild(el.lastChild);
+        return getLastChild(el);
+      } else {
+        return el.lastChild;
+      }
     }
     /**
      * @param {HTMLElement|string} target 最后一个元素
@@ -3907,6 +3990,8 @@
 
 
     function truncate(target, maxHeight) {
+      var applyEllipsis = concatEllipsis(opt);
+
       if (!maxHeight) {
         return;
       }
@@ -3939,10 +4024,8 @@
 
 
       if (chunks.length > 1) {
-        // console.log('chunks', chunks)
-        lastChunk = chunks.pop(); // console.log('lastChunk', lastChunk)
-
-        applyEllipsis(target, chunks.join(splitChar), opt);
+        lastChunk = chunks.pop();
+        target.nodeValue = applyEllipsis(chunks.join(splitChar));
       } //No more chunks can be removed using this character
       else {
           chunks = null;
@@ -3960,7 +4043,7 @@
         if (element.clientHeight <= maxHeight) {
           //There's still more characters to try splitting on, not quite done yet
           if (splitOnChars.length >= 0 && splitChar != '') {
-            applyEllipsis(target, chunks.join(splitChar) + splitChar + lastChunk, opt);
+            target.nodeValue = applyEllipsis(chunks.join(splitChar) + splitChar + lastChunk);
             chunks = null;
           } //Finished!
           else {
@@ -3972,7 +4055,7 @@
           //No valid chunks even when splitting by letter, time to move
           //on to the next node
           if (splitChar == '') {
-            applyEllipsis(target, '', opt);
+            target.nodeValue = applyEllipsis('');
             target = getLastChild(element);
             reset();
           }
@@ -3990,9 +4073,9 @@
 
 
     if (clampValue == 'auto') {
-      clampValue = getMaxLines(element);
+      clampValue = (_readOnlyError("clampValue"), getMaxLines(element));
     } else if (isCSSValue) {
-      clampValue = getMaxLines(element, parseInt(clampValue));
+      clampValue = (_readOnlyError("clampValue"), getMaxLines(element, parseInt(clampValue)));
     }
 
     var clampedText;
@@ -4011,7 +4094,7 @@
       var height = getMaxHeight(element, clampValue);
 
       if (height <= element.clientHeight) {
-        clampedText = truncate(getLastChild(element, opt), height);
+        clampedText = truncate(getLastChild(element), height);
       }
     }
 
