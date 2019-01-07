@@ -3965,11 +3965,28 @@
     var concatEllipsis = curry(flip(function (text, opt) {
       return concat(text, opt.truncationChar);
     }));
+    var truncationReg = new RegExp("\\".concat(compose(join('\\'), split(''))(opt.truncationChar), "$"));
+    /**
+     * 副作用函数
+     */
+
+    var setNodeValue = function setNodeValue(node, text) {
+      return node.nodeValue = text;
+    };
+    /**
+     * 副作用函数
+     */
+
+
+    var setNodeInnerHtml = function setNodeInnerHtml(node, html) {
+      return node.innerHTML = html;
+    };
     /**
      * @param {HTMLElement} el
      * @return {HTMLElement|string}
      * 获得元素的最后一个子元素
      */
+
 
     function getLastChild(el) {
       if (el.lastChild.children && el.lastChild.children.length > 0) {
@@ -4007,7 +4024,7 @@
         lastChunk = null;
       }
 
-      var nodeValue = target.nodeValue.replace(opt.truncationChar, ''); //Grab the next chunks
+      var nodeValue = setNodeValue(target, replace(truncationReg, '', target.nodeValue));
 
       if (!chunks) {
         //If there are more characters to try, grab the next one
@@ -4025,7 +4042,7 @@
 
       if (chunks.length > 1) {
         lastChunk = chunks.pop();
-        target.nodeValue = applyEllipsis(chunks.join(splitChar));
+        setNodeValue(target, applyEllipsis(chunks.join(splitChar)));
       } //No more chunks can be removed using this character
       else {
           chunks = null;
@@ -4033,8 +4050,8 @@
 
 
       if (truncationHTMLContainer) {
-        target.nodeValue = target.nodeValue.replace(opt.truncationChar, '');
-        element.innerHTML = target.nodeValue + ' ' + truncationHTMLContainer.innerHTML + opt.truncationChar;
+        setNodeValue(target, replace(truncationReg, '', target.nodeValue));
+        setNodeInnerHtml(element, target.nodeValue + ' ' + truncationHTMLContainer.innerHTML + opt.truncationChar);
       } //Search produced valid chunks
 
 
@@ -4043,19 +4060,18 @@
         if (element.clientHeight <= maxHeight) {
           //There's still more characters to try splitting on, not quite done yet
           if (splitOnChars.length >= 0 && splitChar != '') {
-            target.nodeValue = applyEllipsis(chunks.join(splitChar) + splitChar + lastChunk);
+            setNodeValue(target, applyEllipsis(chunks.join(splitChar) + splitChar + lastChunk));
             chunks = null;
-          } //Finished!
-          else {
-              return element.innerHTML;
-            }
+          } else {
+            return element.innerHTML;
+          }
         }
       } //No valid chunks produced
       else {
           //No valid chunks even when splitting by letter, time to move
           //on to the next node
           if (splitChar == '') {
-            target.nodeValue = applyEllipsis('');
+            setNodeValue(target, applyEllipsis(''));
             target = getLastChild(element);
             reset();
           }

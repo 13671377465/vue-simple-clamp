@@ -16,7 +16,7 @@
 
     <div id="app">
       <p id="demo" v-clamp="{ clamp: 2 }">{{text}}</p>
-      <p v-clamp="{ clamp: 2, useNativeClamp: false }">{{text}}</p>
+      <p v-clamp="{ clamp: 8, useNativeClamp: false }">{{text}}</p>
       <p v-clamp="{ clamp: 3, useNativeClamp: false, truncationChar: '***' }">{{text}}</p>
       <p v-clamp="{ clamp: 4, useNativeClamp: false, truncationHTML: 'Read More' }">{{text}}</p>
       <p v-clamp="{ clamp: 2, useNativeClamp: false, splitOnChars: ['((('] }">{{text}}</p>
@@ -30,7 +30,7 @@
       new Vue({
         el: '#app',
         data: {
-          text: '这一段测试用到长文tetxt(((tt段测试用到长文本这一段测试用到长文本这一.段测试用到长文本这一段测试用到长文本这一段测试用到长文本到长文本这一段测.试用到长文本这一段测试用到长文 本这一段测试用到长文本这一 段测试用到长文本到长.文本这一段测试用到长文本这一段 测试用到.长文本这一段测试用到长文本这一段测试用到长文本到长文本这一段测试用到长文,本这一段测试.用到长文本这一段测试用到长文本这一段测试用到长文本'
+          text: '这一段测试用到长文tetxt(((…tt段测试用到长文本这一段测试用到长文本这一.段测试用到长文本这一段测试用到长文本这一段测试用到长文本到长文本这一段测.试用到长文本这一段测试用到长文 本这一段测试用到长文本这一 段测试用到长文本到长.文本这一段测试用到长文本这一段 测试用到.长文本这一段测试用到长文本这一段测试用到长文本到长文本这一段测…试用到长文,本这一段测试.用到长文本这一段测试用到长文本这一段测试用到长文本'
         }
       })
     </script>

@@ -35,6 +35,18 @@ function clamp(element, options = {}) {
 
   const concatEllipsis = R.curry(R.flip((text, opt) => R.concat(text, opt.truncationChar)))
 
+  const truncationReg = new RegExp(`\\${R.compose(R.join('\\'), R.split(''))(opt.truncationChar)}$`)
+
+  /**
+   * 副作用函数
+   */
+  const setNodeValue = (node, text) => node.nodeValue = text
+
+  /**
+   * 副作用函数
+   */
+  const setNodeInnerHtml = (node, html) => node.innerHTML = html
+
   /**
    * @param {HTMLElement} el
    * @return {HTMLElement|string}
@@ -73,9 +85,8 @@ function clamp(element, options = {}) {
       lastChunk = null
     }
     
-    var nodeValue = target.nodeValue.replace(opt.truncationChar, '')
+    let nodeValue = setNodeValue(target, R.replace(truncationReg, '', target.nodeValue))
       
-      //Grab the next chunks
     if (!chunks) {
       //If there are more characters to try, grab the next one
       if (splitOnChars.length > 0) {
@@ -95,7 +106,7 @@ function clamp(element, options = {}) {
 
       lastChunk = chunks.pop()
 
-      target.nodeValue = applyEllipsis(chunks.join(splitChar))
+      setNodeValue(target, applyEllipsis(chunks.join(splitChar)))
     }
     //No more chunks can be removed using this character
     else {
@@ -104,8 +115,8 @@ function clamp(element, options = {}) {
       
     //Insert the custom HTML before the truncation character
     if (truncationHTMLContainer) {
-      target.nodeValue = target.nodeValue.replace(opt.truncationChar, '')
-      element.innerHTML = target.nodeValue + ' ' + truncationHTMLContainer.innerHTML + opt.truncationChar
+      setNodeValue(target, R.replace(truncationReg, '', target.nodeValue))
+      setNodeInnerHtml(element, target.nodeValue + ' ' + truncationHTMLContainer.innerHTML + opt.truncationChar)
     }
 
     //Search produced valid chunks
@@ -114,11 +125,9 @@ function clamp(element, options = {}) {
       if (element.clientHeight <= maxHeight) {
         //There's still more characters to try splitting on, not quite done yet
         if (splitOnChars.length >= 0 && splitChar != '') {
-          target.nodeValue = applyEllipsis(chunks.join(splitChar) + splitChar + lastChunk)
+          setNodeValue(target, applyEllipsis(chunks.join(splitChar) + splitChar + lastChunk))
           chunks = null
-        }
-        //Finished!
-        else {
+        } else {
           return element.innerHTML
         }
       }
@@ -128,7 +137,7 @@ function clamp(element, options = {}) {
       //No valid chunks even when splitting by letter, time to move
       //on to the next node
       if (splitChar == '') {
-        target.nodeValue = applyEllipsis('')
+        setNodeValue(target, applyEllipsis(''))
         target = getLastChild(element)
         
         reset()
@@ -150,8 +159,7 @@ function clamp(element, options = {}) {
 
   if (clampValue == 'auto') {
     clampValue = getMaxLines(element)
-  }
-  else if (isCSSValue) {
+  } else if (isCSSValue) {
     clampValue = getMaxLines(element, parseInt(clampValue))
   }
 
